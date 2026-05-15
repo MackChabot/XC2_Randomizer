@@ -1,7 +1,7 @@
 import json
 from scripts import Helper, JSONParser
-import random
-from XC2.XC2_Scripts import IDs
+import random, copy
+from XC2.XC2_Scripts import IDs, Options
 
 def CustomCoreCrystalRando():
     if HasRanOnce():
@@ -135,16 +135,47 @@ def NewGamePlusBladeBalancing():
                     wpn["Damage"] = random.randrange(10,20)
                     wpn["CriRate"] = random.choice([5,10,15,20]) 
                     wpn["Flag"]["Private"] = 0
-                    
-                    
-            # Connect chips to new weapons
+
+            wpnsById = {item['$id']: item for item in wpnData["rows"]}
+
+            newWpnId = wpnData['rows'][-1]['$id'] + 1
+
+            # TODO: Each chip needs the weapons set for CreateWpnN for N=[20-26]
             for chip in chipData["rows"]:
-                for i in range(20,27): # CreateWeapons 20-27 which correspond to those NG+ blade weapons
-                
-                    # Create new weapons
-                    
-                
-                    chip[f"CreateWpn{i}"] = 5973
+                for wpnType in range(20,27): # CreateWeapons 20-26 which correspond to those NG+ blade weapons
+                    # Determine the base weapon
+                    wpnType2BaseWpnType = {
+                        20 : 2, # Calamity Scythe (Akhos) => Catalyst Scimitar
+                        21 : 11, # Cobra Bardiche (Patroka) => Megalance
+                        22 : 7, # Infinity Fans (Mikhail) => Whipswords
+                        23 : 3, # Brilliant Twinblades (Obrona) => Twin Rings
+                        24 : 12, # Decimation Cannon (Perdido) => Ether Cannon
+                        25 : 13, # Rockrending Gauntlets (Cressidus) => Shield Hammer
+                        26 : 14  # Sword Tonfa (Sever) => Chroma Katana
+                    }
+
+                    # ModelBaseWeapon - The original NG+ weapon (for things like resources, etc.)
+                    modelBaseWpn = copy.deepcopy(wpnsById[5971 - 20 + wpnType])
+
+                    # StatsBaseWeapon - A weapon for this chip from a similar weapon type, listed above (for stats)
+                    statsBaseWpnType = wpnType2BaseWpnType[wpnType]
+                    statsBaseWpn = copy.deepcopy(wpnsById[chip[f"CreateWpn{statsBaseWpnType}"]])
+
+                    # Create the new weapon
+                    newWeapon = copy.deepcopy(modelBaseWpn)
+                    statsToCopy = ['Rank', 'Damage', 'Stability', 'CriRate', 'GuardRate', 'Enhance1', 'PArmor', 'EArmor', 'Enhance2']
+                    for stat in statsToCopy:
+                        newWeapon[stat] = statsBaseWpn[stat]
+                    newWeapon['$id'] = newWpnId
+
+                    # Add the new weapon to the table
+                    wpnData['rows'].append(newWeapon)
+
+                    # Set this new weapon on the weapon chip
+                    chip[f"CreateWpn{wpnType}"] = newWpnId
+
+                    # Increment the weapon ID for the next weapon
+                    newWpnId = newWpnId + 1
                     
             JSONParser.CloseFile(chipData, chipFile)     
             JSONParser.CloseFile(wpnData, wpnFile)
@@ -153,11 +184,39 @@ def NewGamePlusBladeBalancing():
     with open("XC2/JsonOutputs/common/CHR_Bl.json", "r+", encoding='utf-8') as blFile:
         blData = json.load(blFile)
         for bl in blData["rows"]:
-            if bl["$id"] in [1043, 1044, 1045, 1046, 1047, 1048, 1049]:
-                bl["Flag"]["OnlyWpn"] = 1
+            # TODO: This happens post blade randomization, so these IDs are not correct
+            #if bl["$id"] in [1043, 1044, 1045, 1046, 1047, 1048, 1049]:
+            if True:
+                #bl["Flag"]["OnlyWpn"] = 0
                 bl["Flag"]["NoBuildWpn"] = 0     
         JSONParser.CloseFile(blData, blFile)
-        
+
+
+    # TODO: Testing. To make sure NG+ blades work, make sure they're the only blades I get on my practice file
+    with open("XC2/JsonOutputs/common/BLD_RareList.json", "r+", encoding='utf-8') as gachaFile:
+        gachaData = json.load(gachaFile)
+        mikhailCore = copy.deepcopy(gachaData["rows"][0])
+        mikhailCore['$id'] = gachaData["rows"][-1]['$id'] + 1
+        mikhailCore['Blade'] = 1045
+        gachaData['rows'].append(mikhailCore)
+        poppibusterCore = copy.deepcopy(gachaData["rows"][0])
+        poppibusterCore['$id'] = gachaData["rows"][-1]['$id'] + 1
+        poppibusterCore['Blade'] = 1105
+        gachaData['rows'].append(poppibusterCore)
+        for gacha in gachaData["rows"]:
+            gacha['Condition'] = 0
+            for i in range(1,6):
+                # Guarantee at least one NG+ blade and one non NG+ blade
+                if gacha['Blade'] in [1045, 1105]:
+                    gacha[f"Prob{i}"] = 10
+                    gacha[f"Assure{i}"] = 1
+                else:
+                    gacha[f"Prob{i}"] = 0
+                    gacha[f"Assure{i}"] = 0
+
+        JSONParser.CloseFile(gachaData, gachaFile)
+
+
 
         
     

@@ -52,9 +52,9 @@ BladesDriverCantUse = {
 GuaranteedHealer = None
 PossibleHealerBladesForEachDriver = {
     1: [1011],
-    2: [1004, 1021, 1033, 1038, 1041, 1107, 1109, 1111], # + Obrona and Mikhail if we can get NG+ Blades working without the weapon chip quirks
+    2: [1004, 1021, 1033, 1038, 1041, 1107, 1109, 1111, 1045, 1046], # + Obrona and Mikhail if we can get NG+ Blades working without the weapon chip quirks TODO: This is 1045 and 1046 I just added
     3: [], # Zeke does not have a healing halo art.
-    6: [1004, 1021, 1033, 1038, 1041, 1107, 1109, 1111] # + Obrona and Mikhail if we can get NG+ Blades working without the weapon chip quirks
+    6: [1004, 1021, 1033, 1038, 1041, 1107, 1109, 1111, 1045, 1046] # + Obrona and Mikhail if we can get NG+ Blades working without the weapon chip quirks TODO: This is 1045 and 1046 I just added
 }
 PossibleHealerBlades = list(set(PossibleHealerBladesForEachDriver[1] + PossibleHealerBladesForEachDriver[2] + PossibleHealerBladesForEachDriver[3] + PossibleHealerBladesForEachDriver[6]))
 
@@ -64,6 +64,9 @@ PoppiForms = [1005, 1006, 1007]
 # The NG+ Exclusive blades cannot use weapon chips, so they cannot be randomized in Race Mode (where their chips are defined by the save file). Exclude those blades in Race Mode to account for this
 BladesAlwaysRandomized = [1001, 1002, 1009, 1010, 1011, 1014, 1015, 1016, 1017, 1018, 1019, 1020, 1021, 1023, 1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031, 1032, 1033, 1034, 1035, 1036, 1037, 1038, 1039, 1040, 1041, 1050, 1104, 1105, 1106, 1107, 1108, 1109, 1111]
 NewGamePlusBlades = [1043, 1044, 1045, 1046, 1047, 1048, 1049] # Currently cannot be randomized, but I would like to figure this out eventually. Will be an option when that works though, because they would be unbalanced if you get them early on
+
+# TODO: Clean this up with the above
+BladesAlwaysRandomized = BladesAlwaysRandomized + NewGamePlusBlades
 
 first_character_randomization = True # Both drivers and blade options call this same function. Only run this logic once
 
@@ -185,7 +188,9 @@ def DetermineGuaranteedHealer():
                 potential_healers = PossibleHealerBladesForEachDriver[2].copy()
             else:
                 potential_healers = PossibleHealerBlades.copy()
-            random.shuffle(potential_healers)
+
+            while potential_healers[0] not in [1045]: # TODO: testing, force Mikhail
+                random.shuffle(potential_healers)
             GuaranteedHealer = potential_healers[0]
             if include_printouts:
                 print("The guaranteed healer is " + CharacterNames[GuaranteedHealer])
@@ -842,7 +847,14 @@ def RebalanceDefaultWeapons():
 
         # Find the weapon that this chip becomes for the replacement blade's weapon type
         new_replacement_weapon_id = chip_table[original_chip]["CreateWpn" + str(replacement_weapon_type_id)]
+
+        # TODO: Temporary solution. The NG+ blades are not defined for chips (yet), so we can just pull their weapon from the original blade
+        #  CoreCrystals.py has logic to fix that, but really that other function should be called from either this module or the CoreCrystals module (whoever comes first)
+        if new_replacement_weapon_id == 0:
+            new_replacement_weapon_id = replacement_blade['DefWeapon']
+
         blade["DefWeapon"] = new_replacement_weapon_id
+
         if include_printouts:
             print("%s's new default weapon is: %s" % (CharacterNames[replacement_blade_id], new_replacement_weapon_id))
 
