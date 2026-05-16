@@ -1,7 +1,7 @@
 from scripts import JSONParser,Helper
 from XC2.XC2_Scripts.IDs import *
 from tkinter import *
-from XC2.XC2_Scripts import QOL as QualityOfLife, Accessories, AuxCores, Misc, BladeSpecials, CoreCrystals as CoreCry, DriverArts, EleCombo, EnemyArts, EnemyEnhancements, FieldSkills, SkillTrees, IDs, MusicShuffling, BladeStats, Skips,GachaModifications, Enhancements, Cosmetics, Items as I, ButtonCombos, Scales, CharacterRandomization, Enemy, WeaponChips, YellowSkills
+from XC2.XC2_Scripts import QOL as QualityOfLife, Accessories, AuxCores, Misc, BladeSpecials, CoreCrystals as CoreCry, DriverArts, EleCombo, EnemyArts, EnemyEnhancements, FieldSkills, SkillTrees, IDs, MusicShuffling, BladeStats, Skips,GachaModifications, Enhancements, Cosmetics, Items as I, ButtonCombos, Scales, CharacterRandomization, Enemy, WeaponChips, YellowSkills, AllBladesAreCreatedEqual
 from XC2.XC2_Scripts.Race_Mode import RaceMode
 from XC2.XC2_Scripts.Torna_Logic import TornaMain
 from XC2.XC2_Scripts.UM_Hunt import UMHuntMain
@@ -118,6 +118,7 @@ BladeStatsOption_Element = SubOption("Elements", BladeStatsOption, [lambda: JSON
 BladeStatsOption_Defenses = SubOption("Defenses", BladeStatsOption, [lambda: JSONParser.ChangeJSONFile(["common/CHR_Bl.json"], ["PArmor", "EArmor"], Helper.InclRange(0,100), BladeStats.BladeDefenseDistribution)])
 BladeStatsOption_Mods = SubOption("Stat Mods", BladeStatsOption, [lambda: JSONParser.ChangeJSONFile(["common/CHR_Bl.json"], ["HpMaxRev", "StrengthRev", "PowEtherRev", "DexRev", "AgilityRev", "LuckRev"], Helper.InclRange(1,100), BladeStats.BladeModDistribution)])
 BladeStatsOption_Class = SubOption("Weapon Class", BladeStatsOption, [lambda: BladeStats.BladeWeaponClassRandomization()])
+BladeCreateEqualOption = Option("All Blades are Created Equal", Blade, "Equalized blade probabilities.\nNG+ Exclusive Blades can modify weapon chips.", [lambda: AllBladesAreCreatedEqual.PostRandoLogic()], prio=Last, preRandoCommands=[lambda: AllBladesAreCreatedEqual.PreRandoLogic()], descData=lambda: AllBladesAreCreatedEqual.Description())
 
 # Enemies
 NormalEnemyOption = Option("Normal Monsters", Enemies, "Randomizes normal monsters into the chosen types", [lambda: Enemy.Enemies(IDs.NormalMonsters, NormalEnemyOption_Normal, NormalEnemyOption_Unique, NormalEnemyOption_Boss, NormalEnemyOption_Superboss, NormalEnemyOption, NormalEnemyOption_Aggro, NormalEnemyOption_Size.GetState(), NormalEnemyOption_Stats)], descData=lambda: Enemy.EnemyDesc(NormalEnemyOption.name), hasSpinBox = True, prio=2)

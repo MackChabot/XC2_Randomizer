@@ -1,11 +1,11 @@
 from scripts import JSONParser, Helper
+from XC2.XC2_Scripts import AllBladesAreCreatedEqual
 
 
 def UnlockNGPlusBlades():
     # Make T-elos and Torna blades available in base playthrough
     JSONParser.ChangeJSONLineWithCallback(["common/BLD_RareList.json"], [], ModifyGachaAvailability, replaceAll=True)
 
-    # Adds Mikhail to the Gacha table
     MikhailGachaRow = {
         "$id": 38,
         "Blade": 1045,

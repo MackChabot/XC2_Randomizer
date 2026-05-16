@@ -611,6 +611,9 @@ def BugFixes_PostRandomization():
             FixCharacterMenuIcon(1, 262, 9, "DR") # Rex after he gets Pyra's core crystal
             FixCharacterMenuIcon(1, 264, 10, "DR") # Rex with the Master Driver outfit
 
+    #if randomize_blades:
+    #    AllBladesAreCreatedEqual.Go()
+
 
 # Unsure why, but it is possible for the game to crash when an enemy blade gets randomized (for example, Pandoria).
 # Replace the enemy version of the blade with the blade who that enemy replaced.
@@ -820,6 +823,10 @@ def RebalanceDefaultWeapons():
 
         # Skip blades which were never randomized in the first place
         if blade['$id'] not in OriginalCharacter2Replacement:
+            return
+
+        # Skip blades which replaced the NG+ blades, as their default weapons (normally strong) are weakened in AllBladesAreCreatedEqual.Go(), called after this point
+        if blade['$id'] in NewGamePlusBlades:
             return
 
         original_blade_id = blade['$id']
